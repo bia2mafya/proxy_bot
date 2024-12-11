@@ -5,8 +5,10 @@ import httpx
 # اطلاعات مربوط به توکن بات
 bot_token = os.getenv('BOT_TOKEN')  # توکن بات از متغیر محیطی دریافت می‌شود
 
-# کانال‌ها برای دریافت پروکسی و ارسال آن‌ها
-source_channels = ['ProxyMTProto', 'MTProxyStar']
+# کانال فقط @ProxyMTProto برای دریافت پروکسی‌ها
+source_channel = 'ProxyMTProto'
+
+# کانال مقصد برای ارسال پروکسی‌ها
 output_channel = '@proxyhuuub'
 
 # پیام اضافی به پروکسی‌ها
@@ -15,8 +17,18 @@ custom_message = "\n\nکانال ما: @proxyhuuub"
 # ایجاد یک Bot با استفاده از توکن
 bot = Bot(token=bot_token)
 
+# دریافت پیام‌ها از کانال @ProxyMTProto
+async def fetch_proxies():
+    proxies = []
+    # دریافت پیام‌ها از کانال @ProxyMTProto
+    messages = bot.get_chat_history(source_channel, limit=50)
+    for message in messages:
+        if message.text and (":" in message.text):
+            proxies.append(message.text + custom_message)
+    return proxies
+
+# ارسال پروکسی‌ها به کانال مقصد
 async def send_proxies(proxies):
-    """ارسال پروکسی‌ها به کانال مقصد"""
     for proxy in proxies:
         try:
             # ارسال پروکسی به کانال
@@ -25,8 +37,8 @@ async def send_proxies(proxies):
             print(f"Error sending message: {e}")
 
 async def main():
-    # فرض کنید پروکسی‌ها را از جایی دریافت کرده‌ایم
-    proxies = ["123.45.67.89:8080", "98.76.54.32:9090"]
+    # دریافت پروکسی‌ها از کانال
+    proxies = await fetch_proxies()
 
     # ارسال پروکسی‌ها به کانال مقصد
     await send_proxies(proxies)
