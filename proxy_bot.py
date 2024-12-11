@@ -13,7 +13,7 @@ output_channel = 'https://t.me/proxyhuuub'
 custom_message = "\n\nکانال ما: @proxyhuuub"
 
 # فقط استفاده از bot_token برای ساخت کلاینت بات
-client = TelegramClient('proxy_bot', api_id=None, api_hash=None).start(bot_token=bot_token)
+client = TelegramClient('proxy_bot', api_id=0, api_hash='').start(bot_token=bot_token)
 
 async def fetch_proxies():
     """دریافت پیام‌ها از کانال‌های منبع"""
