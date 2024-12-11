@@ -3,18 +3,18 @@ import httpx
 import os
 
 # اطلاعات مربوط به API تلگرام
-api_id = os.environ.get('API_ID')
-api_hash = os.environ.get('API_HASH')
-bot_token = os.environ.get('BOT_TOKEN')  # دریافت توکن از متغیر محیطی
+api_id = os.getenv('API_ID')  # از متغیر محیطی دریافت می‌شود
+api_hash = os.getenv('API_HASH')  # از متغیر محیطی دریافت می‌شود
+bot_token = os.getenv('BOT_TOKEN')  # از متغیر محیطی دریافت می‌شود
 
 # کانال‌ها برای دریافت پروکسی و ارسال آن‌ها
 source_channels = ['ProxyMTProto', 'MTProxyStar']
 output_channel = 'https://t.me/proxyhuuub'
 
-# پیام موردنظر برای اضافه کردن به پروکسی‌ها
+# پیام اضافی به پروکسی‌ها
 custom_message = "\n\nکانال ما: @proxyhuuub"
 
-# کلاینت تلگرام
+# ایجاد کلاینت تلگرام
 client = TelegramClient('proxy_bot', api_id, api_hash)
 
 async def fetch_proxies():
@@ -65,5 +65,6 @@ async def main():
     await send_proxies(valid_proxies)
 
 # اجرای اسکریپت
-with client:
-    client.loop.run_until_complete(main())
+if __name__ == "__main__":
+    with client:
+        client.loop.run_until_complete(main())
