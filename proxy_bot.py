@@ -1,21 +1,19 @@
-import os
-from telethon import TelegramClient
+from telethon import TelegramClient, events
 import httpx
+import os
 
-# دریافت API ID و API HASH از متغیرهای محیطی
-api_id = os.getenv('API_ID')
-api_hash = os.getenv('API_HASH')
+api_id = os.environ.get('API_ID')
+api_hash = os.environ.get('API_HASH')
+bot_token = os.environ.get('BOT_TOKEN')
 
-# کانال‌های منبع و مقصد
 source_channels = ['ProxyMTProto', 'MTProxyStar']
 output_channel = 'https://t.me/proxyhuuub'
+
 custom_message = "\n\nکانال ما: @proxyhuuub"
 
-# کلاینت تلگرام
 client = TelegramClient('proxy_bot', api_id, api_hash)
 
 async def fetch_proxies():
-    """دریافت پروکسی از کانال‌های منبع"""
     proxies = []
     for channel in source_channels:
         async for message in client.iter_messages(channel, limit=50):
@@ -24,7 +22,6 @@ async def fetch_proxies():
     return proxies
 
 async def test_proxy(proxy):
-    """تست پروکسی"""
     try:
         proxy_parts = proxy.split(':')
         host, port = proxy_parts[0], int(proxy_parts[1])
@@ -41,16 +38,17 @@ async def test_proxy(proxy):
     return False
 
 async def send_proxies(proxies):
-    """ارسال پروکسی‌های معتبر به کانال مقصد"""
     for proxy in proxies:
         await client.send_message(output_channel, proxy)
 
 async def main():
-    """اجرای برنامه اصلی"""
+    await client.start(bot_token=bot_token)  # استفاده از توکن بات
     proxies = await fetch_proxies()
-    valid_proxies = [proxy for proxy in proxies if await test_proxy(proxy)]
+    valid_proxies = []
+    for proxy in proxies:
+        if await test_proxy(proxy):
+            valid_proxies.append(proxy)
     await send_proxies(valid_proxies)
 
-# اجرای برنامه
 with client:
     client.loop.run_until_complete(main())
