@@ -49,7 +49,7 @@ async def send_proxies(proxies):
         await client.send_message(output_channel, proxy)
 
 async def main():
-    # استفاده از توکن بات برای اتصال
+    # اتصال به بات
     await client.start(bot_token=bot_token)
 
     # دریافت پروکسی‌ها
