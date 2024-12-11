@@ -2,10 +2,8 @@ from telethon import TelegramClient, events
 import httpx
 import os
 
-# اطلاعات مربوط به API تلگرام
-api_id = os.getenv('API_ID')  # از متغیر محیطی دریافت می‌شود
-api_hash = os.getenv('API_HASH')  # از متغیر محیطی دریافت می‌شود
-bot_token = os.getenv('BOT_TOKEN')  # از متغیر محیطی دریافت می‌شود
+# اطلاعات مربوط به توکن بات (فقط نیاز به توکن بات است)
+bot_token = os.getenv('BOT_TOKEN')  # توکن بات از متغیر محیطی دریافت می‌شود
 
 # کانال‌ها برای دریافت پروکسی و ارسال آن‌ها
 source_channels = ['ProxyMTProto', 'MTProxyStar']
@@ -15,7 +13,7 @@ output_channel = 'https://t.me/proxyhuuub'
 custom_message = "\n\nکانال ما: @proxyhuuub"
 
 # ایجاد کلاینت تلگرام
-client = TelegramClient('proxy_bot', api_id, api_hash)
+client = TelegramClient('proxy_bot', api_id=None, api_hash=None).start(bot_token=bot_token)
 
 async def fetch_proxies():
     """دریافت پیام‌ها از کانال‌های منبع"""
@@ -49,9 +47,6 @@ async def send_proxies(proxies):
         await client.send_message(output_channel, proxy)
 
 async def main():
-    # اتصال به بات
-    await client.start(bot_token=bot_token)
-
     # دریافت پروکسی‌ها
     proxies = await fetch_proxies()
 
