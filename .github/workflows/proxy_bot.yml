@@ -1,32 +1,35 @@
-name: Run Proxy Bot
+name: Run ProxyBot
 
 on:
-  schedule:
-    - cron: "0 * * * *" # هر ساعت یکبار اجرا می‌شود
-  workflow_dispatch: # اجرا به صورت دستی
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  run-bot:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v2
       with:
-        python-version: "3.10"
+        python-version: '3.10'
 
-    - name: Install Dependencies
+    - name: Install dependencies
       run: |
-        python -m venv venv
-        source venv/bin/activate
+        python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run Proxy Bot
+    - name: Run bot
+      run: |
+        python proxy_bot.py
       env:
         BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-      run: |
-        source venv/bin/activate
-        python proxy_bot.py
+        API_ID: ${{ secrets.API_ID }}
+        API_HASH: ${{ secrets.API_HASH }}
