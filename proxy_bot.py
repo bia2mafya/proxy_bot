@@ -1,31 +1,34 @@
 import os
-from telethon import TelegramClient
+from telegram import Bot
+from telegram.ext import Updater, CommandHandler
 import httpx
 
-# فقط از توکن بات استفاده کنید
+# اطلاعات مربوط به توکن بات
 bot_token = os.getenv('BOT_TOKEN')  # توکن بات از متغیر محیطی دریافت می‌شود
 
 # کانال‌ها برای دریافت پروکسی و ارسال آن‌ها
 source_channels = ['ProxyMTProto', 'MTProxyStar']
-output_channel = 'https://t.me/proxyhuuub'
+output_channel = '@proxyhuuub'
 
 # پیام اضافی به پروکسی‌ها
 custom_message = "\n\nکانال ما: @proxyhuuub"
 
-# فقط استفاده از bot_token برای ساخت کلاینت بات
-client = TelegramClient('proxy_bot', api_id=0, api_hash='').start(bot_token=bot_token)
+# ایجاد یک Bot با استفاده از توکن
+bot = Bot(token=bot_token)
 
+# این تابع پیام‌ها را از کانال‌های مشخص شده دریافت می‌کند
 async def fetch_proxies():
-    """دریافت پیام‌ها از کانال‌های منبع"""
     proxies = []
     for channel in source_channels:
-        async for message in client.iter_messages(channel, limit=50):
+        # استفاده از API تلگرام برای دریافت پیام‌ها از کانال‌ها
+        messages = bot.get_chat_history(channel, limit=50)
+        for message in messages:
             if message.text and (":" in message.text):
                 proxies.append(message.text + custom_message)
     return proxies
 
+# این تابع پروکسی‌ها را تست می‌کند
 async def test_proxy(proxy):
-    """تست پروکسی"""
     try:
         proxy_parts = proxy.split(':')
         host, port = proxy_parts[0], int(proxy_parts[1])
@@ -41,11 +44,12 @@ async def test_proxy(proxy):
         return False
     return False
 
+# این تابع پروکسی‌های معتبر را به کانال ارسال می‌کند
 async def send_proxies(proxies):
-    """ارسال پروکسی‌های معتبر به کانال مقصد"""
     for proxy in proxies:
-        await client.send_message(output_channel, proxy)
+        await bot.send_message(output_channel, proxy)
 
+# این تابع اصلی است که تمامی پروسه را مدیریت می‌کند
 async def main():
     # دریافت پروکسی‌ها
     proxies = await fetch_proxies()
@@ -59,7 +63,6 @@ async def main():
     # ارسال پروکسی‌ها به کانال مقصد
     await send_proxies(valid_proxies)
 
-# اجرای اسکریپت
 if __name__ == "__main__":
-    with client:
-        client.loop.run_until_complete(main())
+    # اجرا کردن برنامه
+    main()
