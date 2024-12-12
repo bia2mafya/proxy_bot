@@ -2,10 +2,9 @@ from telethon import TelegramClient, events
 import requests
 
 # اطلاعات API
-API_ID = "API_ID_خود_را_اینجا_قرار_دهید"
-API_HASH = "API_HASH_خود_را_اینجا_قرار_دهید"
-BOT_TOKEN = "توکن_ربات_تلگرام_خود_را_اینجا_قرار_دهید"
-
+API_ID = int(os.getenv("API_ID"))
+API_HASH = os.getenv("API_HASH")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 # کانال‌ها
 SOURCE_CHANNEL = "ProxyMTProto"  # کانال منبع (بدون @)
 DESTINATION_CHANNEL = "@proxyhuuub"  # کانال مقصد
