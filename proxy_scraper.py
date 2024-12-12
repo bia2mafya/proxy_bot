@@ -1,61 +1,38 @@
-from telethon import TelegramClient, events
-import requests
+import os
+from telegram import Bot
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
-# اطلاعات API
-API_ID = "21202654"
-API_HASH = "cd42723946486d1f57c5840f351f3820"
-BOT_TOKEN = "7371555081:AAHj72FOZ8WJFc3pTXicMuZGhAKviqX1IzY"
+# خواندن توکن ربات از متغیرهای محیطی
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-# کانال‌ها
-SOURCE_CHANNEL = "ProxyMTProto"  # کانال منبع (بدون @)
-DESTINATION_CHANNEL = "@proxyhuuub"  # کانال مقصد
+# ایجاد ربات
+bot = Bot(token=BOT_TOKEN)
 
-# اتصال به کلاینت
-client = TelegramClient("proxy_session", API_ID, API_HASH)
-bot_client = TelegramClient("bot", API_ID, API_HASH).start(bot_token=BOT_TOKEN)
+# شناسه کانال مقصد
+DESTINATION_CHANNEL = "@proxyhuuub"
 
-# تابع تست پروکسی
-def test_proxy(proxy_url):
-    try:
-        # استخراج اطلاعات پروکسی از URL
-        params = proxy_url.split("?")[1]
-        data = dict(param.split("=") for param in params.split("&"))
-
-        server = data.get("server")
-        port = int(data.get("port"))
-        secret = data.get("secret")
-
-        # پیکربندی پروکسی MTProto
-        proxies = {
-            "http": f"socks5://{server}:{port}",
-            "https": f"socks5://{server}:{port}"
-        }
-
-        # ارسال یک درخواست تستی
-        response = requests.get("https://api.telegram.org", proxies=proxies, timeout=5)
-
-        return response.status_code == 200  # بازگشت True اگر پروکسی فعال است
-    except Exception as e:
-        print(f"خطا در تست پروکسی: {e}")
-        return False
-
-# هندلر پیام‌ها
-@client.on(events.NewMessage(chats=SOURCE_CHANNEL))
-async def handle_new_message(event):
-    proxy_url = event.message.text
-
-    # تست پروکسی
-    if proxy_url.startswith("https://t.me/proxy") and test_proxy(proxy_url):
-        await bot_client.send_message(DESTINATION_CHANNEL, f"پروکسی فعال: {proxy_url}")
-        print(f"پروکسی ارسال شد: {proxy_url}")
+# تابع برای ارسال پیام
+def send_proxy(update, context):
+    message_text = update.message.text
+    if message_text.startswith("https://t.me/proxy"):
+        # ارسال پروکسی به کانال مقصد
+        context.bot.send_message(chat_id=DESTINATION_CHANNEL, text=f"پروکسی فعال: {message_text}")
+        print(f"پروکسی ارسال شد: {message_text}")
     else:
-        print("پروکسی نامعتبر یا غیرفعال.")
+        print("پیام غیر معتبر دریافت شد.")
 
-# شروع برنامه
-async def main():
-    async with client:
-        print("Listening for new messages...")
-        await client.run_until_disconnected()
+# تنظیمات و شروع دریافت پیام‌ها
+def main():
+    updater = Updater(token=BOT_TOKEN, use_context=True)
+    dispatcher = updater.dispatcher
 
-if __name__ == "__main__":
-    client.loop.run_until_complete(main())
+    # هندلر برای پیام‌های جدید
+    message_handler = MessageHandler(Filters.text & ~Filters.command, send_proxy)
+    dispatcher.add_handler(message_handler)
+
+    # شروع دریافت پیام‌ها
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
