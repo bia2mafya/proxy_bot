@@ -1,33 +1,33 @@
-name: Run ProxyBot
+name: Proxy Scraper
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+  schedule:
+    - cron: '*/30 * * * *'  # اجرا هر 30 دقیقه یک بار
 
 jobs:
-  build:
+  run-proxy-scraper:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt  # نصب کتابخانه‌های مورد نیاز از requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Run bot
-      run: |
-        python proxy_bot.py  # اجرای اسکریپت
-      env:
-        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}  # توکن بات از Secrets
+      - name: Run Proxy Scraper
+        env:
+          API_ID: ${{ secrets.API_ID }}
+          API_HASH: ${{ secrets.API_HASH }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: python proxy_scraper.py
