@@ -1,11 +1,10 @@
-import os
 from telethon import TelegramClient, events
 import requests
 
-# خواندن مقادیر از متغیرهای محیطی
-API_ID = int(os.getenv("21202654"))  # API_ID باید عدد صحیح باشد
-API_HASH = os.getenv("cd42723946486d1f57c5840f351f3820")  # API_HASH باید یک رشته باشد
-BOT_TOKEN = os.getenv("7371555081:AAHj72FOZ8WJFc3pTXicMuZGhAKviqX1IzY")  # BOT_TOKEN برای ارسال پیام به کانال مقصد
+# اطلاعات API
+API_ID = "21202654"
+API_HASH = "cd42723946486d1f57c5840f351f3820"
+BOT_TOKEN = "7371555081:AAHj72FOZ8WJFc3pTXicMuZGhAKviqX1IzY"
 
 # کانال‌ها
 SOURCE_CHANNEL = "ProxyMTProto"  # کانال منبع (بدون @)
@@ -40,3 +39,23 @@ def test_proxy(proxy_url):
         print(f"خطا در تست پروکسی: {e}")
         return False
 
+# هندلر پیام‌ها
+@client.on(events.NewMessage(chats=SOURCE_CHANNEL))
+async def handle_new_message(event):
+    proxy_url = event.message.text
+
+    # تست پروکسی
+    if proxy_url.startswith("https://t.me/proxy") and test_proxy(proxy_url):
+        await bot_client.send_message(DESTINATION_CHANNEL, f"پروکسی فعال: {proxy_url}")
+        print(f"پروکسی ارسال شد: {proxy_url}")
+    else:
+        print("پروکسی نامعتبر یا غیرفعال.")
+
+# شروع برنامه
+async def main():
+    async with client:
+        print("Listening for new messages...")
+        await client.run_until_disconnected()
+
+if __name__ == "__main__":
+    client.loop.run_until_complete(main())
