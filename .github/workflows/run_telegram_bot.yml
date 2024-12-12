@@ -24,4 +24,5 @@ jobs:
 
       - name: Run Telegram Bot Script
         run: |
-          python proxy_bot.py  # اجرای اسکریپت پایتون شما
+          python ./proxy_bot.py  # اگر اسکریپت در پوشه اصلی است
+
