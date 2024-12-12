@@ -3,9 +3,9 @@ from telethon import TelegramClient, events
 import requests
 
 # خواندن مقادیر از متغیرهای محیطی
-API_ID = int(os.getenv("API_ID"))  # API_ID باید عدد صحیح باشد
-API_HASH = os.getenv("API_HASH")  # API_HASH باید یک رشته باشد
-BOT_TOKEN = os.getenv("BOT_TOKEN")  # BOT_TOKEN برای ارسال پیام به کانال مقصد
+API_ID = int(os.getenv("21202654"))  # API_ID باید عدد صحیح باشد
+API_HASH = os.getenv("cd42723946486d1f57c5840f351f3820")  # API_HASH باید یک رشته باشد
+BOT_TOKEN = os.getenv("7371555081:AAHj72FOZ8WJFc3pTXicMuZGhAKviqX1IzY")  # BOT_TOKEN برای ارسال پیام به کانال مقصد
 
 # کانال‌ها
 SOURCE_CHANNEL = "ProxyMTProto"  # کانال منبع (بدون @)
