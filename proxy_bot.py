@@ -1,45 +1,61 @@
-import os
-from telethon import TelegramClient
-import asyncio
+from telethon import TelegramClient, events
+import requests
 
-# اطلاعات مربوط به توکن بات
-bot_token = os.getenv('BOT_TOKEN')  # توکن بات از متغیر محیطی دریافت می‌شود
+# اطلاعات API
+API_ID = "API_ID_خود_را_اینجا_قرار_دهید"
+API_HASH = "API_HASH_خود_را_اینجا_قرار_دهید"
+BOT_TOKEN = "توکن_ربات_تلگرام_خود_را_اینجا_قرار_دهید"
 
-# کانال فقط @ProxyMTProto برای دریافت پروکسی‌ها
-source_channel = 'ProxyMTProto'
+# کانال‌ها
+SOURCE_CHANNEL = "ProxyMTProto"  # کانال منبع (بدون @)
+DESTINATION_CHANNEL = "@proxyhuuub"  # کانال مقصد
 
-# کانال مقصد برای ارسال پروکسی‌ها
-output_channel = '@proxyhuuub'
+# اتصال به کلاینت
+client = TelegramClient("proxy_session", API_ID, API_HASH)
+bot_client = TelegramClient("bot", API_ID, API_HASH).start(bot_token=BOT_TOKEN)
 
-# پیام اضافی به پروکسی‌ها
-custom_message = "\n\nکانال ما: @proxyhuuub"
+# تابع تست پروکسی
+def test_proxy(proxy_url):
+    try:
+        # استخراج اطلاعات پروکسی از URL
+        params = proxy_url.split("?")[1]
+        data = dict(param.split("=") for param in params.split("&"))
 
-# ایجاد یک کلاینت تلگرام
-client = TelegramClient('proxy_bot', api_id=None, api_hash=None).start(bot_token=bot_token)
+        server = data.get("server")
+        port = int(data.get("port"))
+        secret = data.get("secret")
 
-# دریافت پیام‌ها از کانال @ProxyMTProto
-async def fetch_proxies():
-    proxies = []
-    async for message in client.iter_messages(source_channel, limit=50):
-        if message.text and (":" in message.text):
-            proxies.append(message.text + custom_message)
-    return proxies
+        # پیکربندی پروکسی MTProto
+        proxies = {
+            "http": f"socks5://{server}:{port}",
+            "https": f"socks5://{server}:{port}"
+        }
 
-# ارسال پروکسی‌ها به کانال مقصد
-async def send_proxies(proxies):
-    for proxy in proxies:
-        try:
-            # ارسال پروکسی به کانال
-            await client.send_message(output_channel, proxy)
-        except Exception as e:
-            print(f"Error sending message: {e}")
+        # ارسال یک درخواست تستی
+        response = requests.get("https://api.telegram.org", proxies=proxies, timeout=5)
 
+        return response.status_code == 200  # بازگشت True اگر پروکسی فعال است
+    except Exception as e:
+        print(f"خطا در تست پروکسی: {e}")
+        return False
+
+# هندلر پیام‌ها
+@client.on(events.NewMessage(chats=SOURCE_CHANNEL))
+async def handle_new_message(event):
+    proxy_url = event.message.text
+
+    # تست پروکسی
+    if proxy_url.startswith("https://t.me/proxy") and test_proxy(proxy_url):
+        await bot_client.send_message(DESTINATION_CHANNEL, f"پروکسی فعال: {proxy_url}")
+        print(f"پروکسی ارسال شد: {proxy_url}")
+    else:
+        print("پروکسی نامعتبر یا غیرفعال.")
+
+# شروع برنامه
 async def main():
-    # دریافت پروکسی‌ها از کانال
-    proxies = await fetch_proxies()
-
-    # ارسال پروکسی‌ها به کانال مقصد
-    await send_proxies(proxies)
+    async with client:
+        print("Listening for new messages...")
+        await client.run_until_disconnected()
 
 if __name__ == "__main__":
     client.loop.run_until_complete(main())
